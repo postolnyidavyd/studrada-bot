@@ -10,9 +10,7 @@ public class PostTargetConfiguration : IEntityTypeConfiguration<PostTarget>
     {
         builder.HasKey(pt => new { pt.PostId, pt.ChannelId });
 
-        builder.HasOne<Post>().WithMany()
-            .HasForeignKey(pt => pt.PostId);
-        
+        // FK до Post визначено в PostConfiguration через HasMany(p => p.Targets)
         builder.HasOne<Channel>().WithMany()
             .HasForeignKey(pt => pt.ChannelId);
 

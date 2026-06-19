@@ -1,5 +1,6 @@
 ARCHITECTURE.md
 CLAUDE.md
+memory/
 
 appsettings.Development.json
 appsettings.*.Local.json
