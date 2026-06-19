@@ -7,7 +7,7 @@ public class Member
     public int Id { get; set; }
     
     public long TelegramId { get; set; }
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = null!;
     public Role Role { get; set; } // Requester | Member | Admin
     
     public bool StartedBot { get; set; } // натиснув /start

@@ -6,7 +6,7 @@ public class Invite
 {
     public int Id { get; set; }
     
-    public string Code { get; set; }
+    public string Code { get; set; } = null!;
     public Role GrantsRole { get; set; }
     
     public int CreatedById { get; set; }

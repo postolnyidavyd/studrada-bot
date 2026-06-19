@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using studrada_bot.Data;
 
 #nullable disable
 
-namespace studrada_bot.Data.Migrations
+namespace studrada_bot.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619114523_AddRemainingEntities")]
+    partial class AddRemainingEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,10 +131,8 @@ namespace studrada_bot.Data.Migrations
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("GrantsRole")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("GrantsRole")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("UsedAt")
                         .HasColumnType("timestamp with time zone");
@@ -172,10 +173,8 @@ namespace studrada_bot.Data.Migrations
                     b.Property<long?>("PrivateChatId")
                         .HasColumnType("bigint");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
 
                     b.Property<bool>("StartedBot")
                         .HasColumnType("boolean");
@@ -217,10 +216,8 @@ namespace studrada_bot.Data.Migrations
                     b.Property<string>("ContentMediaFileId")
                         .HasColumnType("text");
 
-                    b.Property<string>("ContentMediaType")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("ContentMediaType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -240,23 +237,17 @@ namespace studrada_bot.Data.Migrations
                     b.Property<DateTimeOffset?>("HumanNudgedOn")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Origin")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("Origin")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("OwnerId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ParseMode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("ParseMode")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("PublishMode")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("PublishMode")
+                        .HasColumnType("integer");
 
                     b.Property<DateTimeOffset?>("PublishedAt")
                         .HasColumnType("timestamp with time zone");
@@ -270,10 +261,8 @@ namespace studrada_bot.Data.Migrations
                     b.Property<int?>("SourceRecurringEventId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -281,17 +270,9 @@ namespace studrada_bot.Data.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.HasIndex("Deadline");
-
-                    b.HasIndex("HangfireJobId");
-
                     b.HasIndex("OwnerId");
 
-                    b.HasIndex("ScheduledFor");
-
                     b.HasIndex("SourceRecurringEventId");
-
-                    b.HasIndex("Status");
 
                     b.ToTable("Posts");
                 });
@@ -316,10 +297,8 @@ namespace studrada_bot.Data.Migrations
                     b.Property<int?>("PublishedMessageId")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("PostId", "ChannelId");
 
@@ -360,14 +339,11 @@ namespace studrada_bot.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("WeekDay")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)");
+                    b.Property<int?>("WeekDay")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

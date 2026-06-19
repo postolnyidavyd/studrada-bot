@@ -9,5 +9,6 @@ public class ChannelConfiguration : IEntityTypeConfiguration<Channel>
     public void Configure(EntityTypeBuilder<Channel> builder)
     {
         builder.HasKey(c => c.Id);
+        builder.HasIndex(c => c.TelegramChatId).IsUnique();
     }
 }

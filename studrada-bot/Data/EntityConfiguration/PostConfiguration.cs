@@ -27,6 +27,10 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
         builder.HasMany(p => p.Targets).WithOne()
             .HasForeignKey(t => t.PostId)
             .OnDelete(DeleteBehavior.Cascade);
-
+        
+        builder.HasIndex(p => p.Status);
+        builder.HasIndex(p => p.ScheduledFor);
+        builder.HasIndex(p => p.Deadline);
+        builder.HasIndex(p => p.HangfireJobId);
     }
 }

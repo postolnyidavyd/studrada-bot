@@ -43,6 +43,6 @@ public class Post
     
     public DateTimeOffset CreatedAt { get; set; }
 
-    public IEnumerable<PostTarget> Targets { get; set; } = new List<PostTarget>();
+    public ICollection<PostTarget> Targets { get; set; } = new List<PostTarget>();
 
 }
