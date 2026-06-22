@@ -35,12 +35,15 @@ builder.Services.AddHangfire(cfg => cfg
     .UseSimpleAssemblyNameTypeSerializer()
     .UseRecommendedSerializerSettings()
     .UsePostgreSqlStorage(
+        // Hangfire тримає довгоживучі з'єднання + полить БД + advisory locks —
+        // transaction pooler (6543) це не тягне, тож session pooler (5432, "Migration")
         opts => opts.UseNpgsqlConnection(
-            builder.Configuration.GetConnectionString("Default")
-                ?? throw new InvalidOperationException("Default connection string не задано")),
+            builder.Configuration.GetConnectionString("Migration")
+                ?? throw new InvalidOperationException("Migration connection string не задано")),
         new PostgreSqlStorageOptions { SchemaName = "hangfire" }));
 
-builder.Services.AddHangfireServer();
+// Воркерів за замовч. 20 — для бота на кілька людей це зайві з'єднання до session pooler
+builder.Services.AddHangfireServer(opts => opts.WorkerCount = 3);
 
 // ── Хендлери ─────────────────────────────────────────────────────────────────
 builder.Services.AddSingleton<UpdateHandler>();
