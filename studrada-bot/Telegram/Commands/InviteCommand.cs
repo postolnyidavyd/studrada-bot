@@ -17,8 +17,6 @@ public static class InviteCommand
 
     public static async Task HandleAsync(ITelegramBotClient bot, Message msg, Member member, IServiceProvider services, CancellationToken ct)
     {
-        if (msg.Chat.Type != ChatType.Private) return;
-
         var memberService = services.GetRequiredService<MemberService>();
 
         if (member.Role != Role.Admin)

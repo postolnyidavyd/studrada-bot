@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using studrada_bot.Data.Entities;
 using studrada_bot.Infrastructure;
 using studrada_bot.Services;
 using studrada_bot.Telegram.Commands;
@@ -10,11 +11,48 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace studrada_bot.Telegram;
 
-public class UpdateHandler(IServiceScopeFactory scopeFactory, IOptions<BotOptions> botOptions) : IUpdateHandler
+public class UpdateHandler(
+    IServiceScopeFactory scopeFactory,
+    IOptions<BotOptions> botOptions,
+    ILogger<UpdateHandler> logger) : IUpdateHandler
 {
     private readonly BotOptions _botOptions = botOptions.Value;
 
+    // Усі команди — лише в приватному чаті, однакова сигнатура. Диспатч через словник,
+    // щоб не розрощувати switch з кожною новою командою (/new, /list, /mine, /stats...).
+    private static readonly Dictionary<string, Func<ITelegramBotClient, Message, Member, IServiceProvider, CancellationToken, Task>> Commands = new()
+    {
+        ["/start"]  = StartCommand.HandleAsync,
+        ["/invite"] = InviteCommand.HandleAsync,
+    };
+
     public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken ct)
+    {
+        try
+        {
+            await RouteUpdateAsync(bot, update, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            logger.LogError(ex, "Помилка обробки апдейту");
+
+            // Щоб користувач не висів без відповіді коли хендлер/БД впали
+            var chatId = update.Message?.Chat.Id ?? update.CallbackQuery?.Message?.Chat.Id;
+            if (chatId is not null)
+            {
+                try
+                {
+                    await bot.SendMessage(chatId, "Сталася помилка. Спробуй ще раз трохи згодом.", cancellationToken: ct);
+                }
+                catch (Exception sendEx)
+                {
+                    logger.LogError(sendEx, "Не вдалося надіслати повідомлення про помилку в чат {ChatId}", chatId);
+                }
+            }
+        }
+    }
+
+    private async Task RouteUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken ct)
     {
         await using var scope = scopeFactory.CreateAsyncScope();
         var services = scope.ServiceProvider;
@@ -33,7 +71,7 @@ public class UpdateHandler(IServiceScopeFactory scopeFactory, IOptions<BotOption
             member = await memberService.BootstrapFounderAsync(update.Message!, telegramId.Value, ct);
         }
 
-        // Invite redemption для незнайомих користувачів
+        // Використання інвайта 
         if (member is null && update.Message is { } unknownMsg)
         {
             await HandleUnknownMessageAsync(bot, unknownMsg, memberService, ct);
@@ -44,13 +82,12 @@ public class UpdateHandler(IServiceScopeFactory scopeFactory, IOptions<BotOption
 
         if (update.Message is { } msg)
         {
-            var command = msg.Text?.Split(' ', '@')[0];
-            await (command switch
-            {
-                "/start"  => StartCommand.HandleAsync(bot, msg, member!, services, ct),
-                "/invite" => InviteCommand.HandleAsync(bot, msg, member!, services, ct),
-                _         => Task.CompletedTask
-            });
+            if (msg.Chat.Type != ChatType.Private) return;
+
+            // "/start@botname arg" → "/start"
+            var command = msg.Text?.Split('@')[0].Split(' ')[0];
+            if (command is not null && Commands.TryGetValue(command, out var handler))
+                await handler(bot, msg, member!, services, ct);
         }
 
         // TODO: CallbackQuery
@@ -85,7 +122,7 @@ public class UpdateHandler(IServiceScopeFactory scopeFactory, IOptions<BotOption
                 await bot.SendMessage(msg.Chat.Id, "Забагато спроб. Спробуй через годину.", cancellationToken: ct);
                 break;
 
-            // NotFound / Expired / AlreadyUsed — навмисно однакова відповідь, не розкриваємо чи код існує
+            // не розкриваємо чи код існує
             default:
                 await bot.SendMessage(msg.Chat.Id, "Невірний або прострочений код запрошення.", cancellationToken: ct);
                 break;
@@ -112,7 +149,7 @@ public class UpdateHandler(IServiceScopeFactory scopeFactory, IOptions<BotOption
 
     public Task HandleErrorAsync(ITelegramBotClient bot, Exception exception, HandleErrorSource source, CancellationToken ct)
     {
-        // TODO: логування помилок polling
+        logger.LogError(exception, "Помилка polling ({Source})", source);
         return Task.CompletedTask;
     }
 }

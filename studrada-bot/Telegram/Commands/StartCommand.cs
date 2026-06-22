@@ -11,8 +11,6 @@ public static class StartCommand
 {
     public static async Task HandleAsync(ITelegramBotClient bot, Message msg, Member member, IServiceProvider services, CancellationToken ct)
     {
-        if (msg.Chat.Type != ChatType.Private) return;
-
         var memberService = services.GetRequiredService<MemberService>();
         await memberService.OnBotStartedAsync(member, msg.Chat.Id, ct);
         
